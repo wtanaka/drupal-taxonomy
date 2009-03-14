@@ -6,11 +6,10 @@
 function real_taxonomy_form($vid, $value = 0, $help = NULL, $name = 'taxonomy') {
   $vocabulary = taxonomy_get_vocabulary($vid);
   $help = ($help) ? $help : $vocabulary->help;
-  if ($vocabulary->required) {
-    $blank = 0;
-  }
-  else {
-    $blank = '<'. t('none') .'>';
+  $blank = 0;
+
+  if (!$vocabulary->multiple) {
+    $blank = ($vocabulary->required) ? t('- Please choose -') : t('- None selected -');
   }
 
   return _taxonomy_term_select(check_plain($vocabulary->name), $name, $value, $vid, $help, intval($vocabulary->multiple), $blank);
@@ -104,7 +103,7 @@ function _taxonomy_term_select($title, $name, $value, $vocabulary_id, $descripti
   $options = array();
 
   if ($blank) {
-    $options[0] = $blank;
+    $options[''] = $blank;
   }
   if ($tree) {
     foreach ($tree as $term) {
@@ -113,10 +112,6 @@ function _taxonomy_term_select($title, $name, $value, $vocabulary_id, $descripti
         $choice->option = array($term->tid => str_repeat('-', $term->depth) . $term->name);
         $options[] = $choice;
       }
-    }
-    if (!$blank && !$value) {
-      // required but without a predefined value, so set first as predefined
-      $value = $tree[0]->tid;
     }
   }
 
