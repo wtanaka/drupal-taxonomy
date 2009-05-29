@@ -4,8 +4,8 @@ description = Enables the categorization of content.
 package = Core - optional
 version = VERSION
 
-; Information added by drupal.org packaging script on 2009-02-25
-version = "5.16"
+; Information added by drupal.org packaging script on 2009-04-30
+version = "5.17"
 project = "drupal"
-datestamp = "1235604023"
+datestamp = "1241050830"
 
