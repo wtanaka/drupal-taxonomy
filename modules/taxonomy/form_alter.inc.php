@@ -5,7 +5,7 @@
  */
 function real_taxonomy_form($vid, $value = 0, $help = NULL, $name = 'taxonomy') {
   $vocabulary = taxonomy_get_vocabulary($vid);
-  $help = ($help) ? $help : $vocabulary->help;
+  $help = ($help) ? $help : filter_xss_admin($vocabulary->help);
 
   if (!$vocabulary->multiple) {
     $blank = ($vocabulary->required) ? t('- Please choose -') : t('- None selected -');
@@ -57,7 +57,7 @@ function real_taxonomy_form_alter($form_id, &$form) {
         $typed_string = implode(', ', $typed_terms) . (array_key_exists('tags', $terms) ? $terms['tags'][$vocabulary->vid] : NULL);
 
         if ($vocabulary->help) {
-          $help = $vocabulary->help;
+          $help = filter_xss_admin($vocabulary->help);
         }
         else {
           $help = t('A comma-separated list of terms describing this content. Example: funny, bungee jumping, "Company, Inc.".');
@@ -80,7 +80,7 @@ function real_taxonomy_form_alter($form_id, &$form) {
             $default_terms[$term->tid] = $term;
           }
         }
-        $form['taxonomy'][$vocabulary->vid] = taxonomy_form($vocabulary->vid, array_keys($default_terms), $vocabulary->help);
+        $form['taxonomy'][$vocabulary->vid] = taxonomy_form($vocabulary->vid, array_keys($default_terms), filter_xss_admin($vocabulary->help));
         $form['taxonomy'][$vocabulary->vid]['#weight'] = $vocabulary->weight;
         $form['taxonomy'][$vocabulary->vid]['#required'] = $vocabulary->required;
       }
@@ -100,6 +100,35 @@ function real_taxonomy_form_alter($form_id, &$form) {
   }
 }
 
+/**
+ * Create a select form element for a given taxonomy vocabulary.
+ *
+ * NOTE: This function expects input that has already been sanitized and is
+ * safe for display. Callers must properly sanitize the $title and
+ * $description arguments to prevent XSS vulnerabilities.
+ *
+ * @param $title
+ *   The title of the vocabulary. This MUST be sanitized by the caller.
+ * @param $name
+ *   Ignored.
+ * @param $value
+ *   The currently selected terms from this vocabulary, if any.
+ * @param $vocabulary_id
+ *   The vocabulary ID to build the form element for.
+ * @param $description
+ *   Help text for the form element. This MUST be sanitized by the caller.
+ * @param $multiple
+ *   Boolean to control if the form should use a single or multiple select.
+ * @param $blank
+ *   Optional form choice to use when no value has been selected.
+ * @param $exclude
+ *   Optional array of term ids to exclude in the selector.
+ * @return
+ *   A FAPI form array to select terms from the given vocabulary.
+ *
+ * @see taxonomy_form()
+ * @see taxonomy_form_term()
+ */
 function _taxonomy_term_select($title, $name, $value, $vocabulary_id, $description, $multiple, $blank, $exclude = array()) {
   $tree = taxonomy_get_tree($vocabulary_id);
   $options = array();
